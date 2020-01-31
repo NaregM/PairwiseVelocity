@@ -157,12 +157,32 @@ vector<double> elementSum(vector<double> &v1, vector<double> &v2)
     return s;
 }
 
+vector<double> elementMultiply(vector<double> &v, double &x)
+{
+    vector<double> s;
+    for (int i = 0; i < v.size(); i++)
+    {
+        s.push_back(v[i] * x);
+    }
+
+    return s;
+}
+
+vector<double> elementSub(vector<double> &v1, vector<double> &v2)
+{
+    vector<double> s;
+    for (int i = 0; i < v1.size(); i++)
+    {
+        s.push_back(v1[i] - v2[i]);
+    }
+
+    return s;
+}
+
+
 vector<double> v12_direct(vector<Cluster> &clusters, double Mthr, int nbins, double binsize)
 {
     // Remove elements with M < Mthr
-    //double Mthr;
-    //cout << "Enter mass threshold [M_{solar}]: " << endl;
-    //cin >> Mthr;
     Mcut(clusters, Mthr);
     Xadd(clusters, 5e6);
     //cout << "Finial size: " << Clusters.size() << endl;
@@ -170,11 +190,6 @@ vector<double> v12_direct(vector<Cluster> &clusters, double Mthr, int nbins, dou
     int nclus = clusters.size();   // Number of clusters
 
     cout << "Total numner of clusters: " << nclus << endl;
-
-    //int nbins = 20;  // Number of bins
-    //double binsize = 4.0;
-
-    //vector<double> rbins_ = rbins(nbins, binsize);
 
     vector<int> n_of_r(nbins, 0);
     vector<double> v_of_r(nbins, 0.0);
@@ -200,8 +215,6 @@ vector<double> v12_direct(vector<Cluster> &clusters, double Mthr, int nbins, dou
 
                 int ibin = (int)floor(dr_norm/binsize);
 
-                //cout << ibin << endl;
-
                 if (ibin < nbins)
                 {
                     n_of_r[ibin] += 1;
@@ -224,24 +237,15 @@ vector<double> v12_direct(vector<Cluster> &clusters, double Mthr, int nbins, dou
     return v_of_r;
 }
 
-vector<double> v12_estimator(vector<Cluster> &clusters, double Mthr, int nbins, double binsize)
+vector<double> v12_est_r(vector<Cluster> &clusters, double Mthr, int nbins, double binsize)
 {
     // Remove elements with M < Mthr
-    //double Mthr;
-    //cout << "Enter mass threshold [M_{solar}]: " << endl;
-    //cin >> Mthr;
     Mcut(clusters, Mthr);
     Xadd(clusters, 5e6);
-    //cout << "Finial size: " << Clusters.size() << endl;
 
     int nclus = clusters.size();   // Number of clusters
 
     cout << "Total numner of clusters: " << nclus << endl;
-
-    //int nbins = 20;  // Number of bins
-    //double binsize = 4.0;
-
-    //vector<double> rbins_ = rbins(nbins, binsize);
 
     vector<double> v12_est(nbins, 0.0);
     vector<double> p_squared(nbins, 0.0);
@@ -292,6 +296,91 @@ vector<double> v12_estimator(vector<Cluster> &clusters, double Mthr, int nbins, 
     return v12_est;
 }
 
+
+vector<double> v12_est_t(vector<Cluster> &clusters, double Mthr, int nbins, double binsize)
+{
+    // Remove elements with M < Mthr
+    Mcut(clusters, Mthr);
+    Xadd(clusters, 5e6);   // Add 5000 Mpc to the x coordinate
+
+    int nclus = clusters.size();   // Number of clusters
+
+    cout << "Total numner of clusters: " << nclus << endl;
+
+    vector<double> v12_est(nbins, 0.0);
+    vector<double> q_squared(nbins, 0.0);
+
+    for (int i = 0; i < clusters.size(); i++)
+    {
+        if (i % 100 == 0)
+
+            cout << "Claculating cluster : " << i << " --- ";
+
+        for (int j = 0; j <= i; j++)
+        {
+            if (i != j)
+            {
+                vector<double> dr_ = dr(clusters[i], clusters[j]);
+                vector<double> r1_hat = position_hat(clusters[i]);
+                vector<double> r2_hat = position_hat(clusters[j]);
+
+                double dr_norm = sqrt(dot(dr_, dr_));
+                vector<double> dr_hat = elementDivid(dr_, dr_norm);
+
+                //====
+                double preFac = 2.0;
+                vector<double> q0 = elementMultiply(dr_hat, preFac);
+
+                double q10 = dot(dr_hat, r1_hat);
+                vector<double> q1 = elementMultiply(r1_hat, q10);
+
+                double q20 = dot(dr_hat, r2_hat);
+                vector<double> q2 = elementMultiply(r2_hat, q20);
+
+                vector<double> q3 = elementSub(q0, q1);
+                vector<double> q4 = elementSub(q3, q2);
+
+                double preFac2 = 0.5;
+                vector<double> q_AB = elementMultiply(q4, preFac2);
+
+                double S1 = dot(velocity(clusters[i]), r1_hat);
+                double S2 = dot(velocity(clusters[j]), r2_hat);
+
+                //====
+                vector<double> S1_r1 = elementMultiply(r1_hat, S1);
+                vector<double> S2_r2 = elementMultiply(r2_hat, S2);
+
+                vector<double> v_i = velocity(clusters[i]);
+                vector<double> v_j = velocity(clusters[j]);
+
+                vector<double> t1 = elementSub(v_i, S1_r1);
+                vector<double> t2 = elementSub(v_j, S2_r2);
+
+                int ibin = (int)floor(dr_norm/binsize);
+
+                if (ibin < nbins)
+                {
+                    v12_est[ibin] += dot(elementSub(t1, t2), q_AB);
+                    q_squared[ibin] += dot(q_AB, q_AB);
+                }
+
+            } else
+                  {
+                      continue;
+                  }
+        }
+    }
+
+    for (int i = 0; i < v12_est.size(); i++)
+    {
+        v12_est[i] = v12_est[i]/q_squared[i];
+    }
+
+    return v12_est;
+}
+
+
+
 void saveResults(string filePath, vector<double> &v)
 {
     ofstream output_file(filePath);
@@ -311,9 +400,6 @@ istream &operator>>(istream& is, Cluster& coordinates)
 
 vector<Cluster> readFile(string filename, vector<Cluster> Clusters)
 {
-    //char filename[] = "gr_cat_250.txt";
-    //vector<Cluster> Clusters;
-
     ifstream ifs(filename);
     if (ifs)
     {

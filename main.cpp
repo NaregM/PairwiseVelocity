@@ -27,11 +27,17 @@ int main()
         ifs.close();
     }*/
 
-    vector<double> V12_direct, V12_est;
-    V12_direct = v12_direct(Clusters, 1.0e14, 20, 4.0);
-    V12_est = v12_estimator(Clusters, 1.0e14, 20, 4.0);
+    vector<double> V12_direct, V12_est_r, V12_est_t;
 
-    vector<double> r = rbins(20, 4.0);
+    double Mthr = 2.5e13;
+    int nbins = 30;
+    double binsize = 4.0;
+
+    V12_direct = v12_direct(Clusters, Mthr, nbins, binsize);
+    V12_est_r = v12_est_r(Clusters, Mthr, nbins, binsize);
+    V12_est_t = v12_est_t(Clusters, Mthr, nbins, binsize);
+
+    vector<double> r = rbins(nbins, binsize);
 
     /*cout << "Direct: " << endl;
     for (auto v : V12_direct)
@@ -44,8 +50,9 @@ int main()
 
     cout << duration.count() * 1e-6 << " [s] " << endl;
 
-    saveResults("v12_direct_3e13.txt", V12_direct);
-    saveResults("v12_est_3313.txt", V12_est);
+    saveResults("v12_direct_2.5e13.txt", V12_direct);
+    saveResults("v12_estr_2.5e13.txt", V12_est_r);
+    saveResults("v12_estt_2.5e13.txt", V12_est_t);
     saveResults("rbins.txt", r);
 
     return 0;

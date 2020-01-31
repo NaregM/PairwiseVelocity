@@ -36,9 +36,12 @@ vector<double> dr(Cluster &c1, Cluster &c2);
 vector<double> dv(Cluster &c1, Cluster &c2);
 vector<double> elementDivid(vector<double> &v, double &x);
 vector<double> elementSum(vector<double> &v1, vector<double> &v2);
+vector<double> elementSub(vector<double> &v1, vector<double> &v2);
+vector<double> elementMultiply(vector<double> &v, double &x);
 vector<double> velocity(Cluster &c);
 vector<double> v12_direct(vector<Cluster> &clusters, double Mthr, int nbins, double binsize);
-vector<double> v12_estimator(vector<Cluster> &clusters, double Mthr, int nbins, double binsize);
+vector<double> v12_est_r(vector<Cluster> &clusters, double Mthr, int nbins, double binsize);
+vector<double> v12_est_t(vector<Cluster> &clusters, double Mthr, int nbins, double binsize);
 void saveResults(string filePath, vector<double> &v);
 
 
