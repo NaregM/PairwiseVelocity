@@ -32,7 +32,6 @@ def v12(data, number_of_bins, binsize, mass_cut):
     v_case1 = np.zeros(nbins)
     v_case2 = np.zeros(nbins)
     v_case3 = np.zeros(nbins)
-    v_case4 = np.zeros(nbins)
     p_squared = np.zeros(nbins)
     q_squared = np.zeros(nbins)
     
@@ -90,7 +89,6 @@ def v12(data, number_of_bins, binsize, mass_cut):
                 
                 v_case3[ibin] += np.dot(t1 - t2, q_AB)
                 
-                v_case4[ibin] += LA.norm(t1 - t2) * LA.norm(q_AB)
                 p_squared[ibin] += p_AB**2
                 
                 q_squared[ibin] += np.dot(q_AB, q_AB)
@@ -103,4 +101,4 @@ def v12(data, number_of_bins, binsize, mass_cut):
     v_case4[ind] /= q_squared[ind]
     err = v_case1[ind]/np.sqrt(n_of_r[ind])
 
-    return rbins, v_case1, v_case2, v_case3, v_case4, err
+    return rbins, v_case1, v_case2, v_case3, err
