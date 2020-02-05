@@ -98,7 +98,6 @@ def v12(data, number_of_bins, binsize, mass_cut):
     v_case1[ind] /= n_of_r[ind]
     v_case2[ind] /= p_squared[ind]
     v_case3[ind] /= q_squared[ind]
-    v_case4[ind] /= q_squared[ind]
     err = v_case1[ind]/np.sqrt(n_of_r[ind])
 
     return rbins, v_case1, v_case2, v_case3, err
